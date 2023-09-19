@@ -1,0 +1,324 @@
+https://coding-kindergarten.tistory.com/29
+
+정적 수집
+웹페이지의 url → 항상 같은 화면, 정적 페이지
+
+순서는 아래와 같습니다.
+
+<정적 수집 순서>
+1단계. 목표로 하는 웹 페이지의 html을 requests 패키지를 이용하며 받아 옴
+2단계. 가져온 html 문서 전체를 beautifulsoup4 패키지를 이용하여 파싱(parsing)함
+3단계. 필요한 정보만 골라서 리스트에 담음.
+4단계. 리스트를 print() 함수로 출력하던가, excel이나 csv 파일에 저장.
+
+1단계. requests
+html 문서를 가져올 때 사용 패키지, 사용자 친화적 문법 사용 → 다루기 쉽고 안정성 뛰어남
+파이썬 기본 라이브러리 포함 urllib 패키지보다 자주 사용
+
+import requests
+url = 'https://www.naver.com'  
+response = requests.get(url)    
+html_text = response.text
+ 
+2단계. BeautifulSoup4
+파싱(Parsing)
+
+from bs4 import BeautifulSoup as bs
+html = bs(html_text, 'html.parser')
+
+웹크롤링의 핵심 : 필요한 정보의 위치와 구조를 파악해서 원하는 것만 취하는 것
+find( ), find_all( ) 함수
+find는 하나만 (중복 시 처음 것), find_all은 모두 다 찾는 것
+괄호( ) 안에는 html의 태그(tag)나 속성(attribute)
+
+# 목표 태그 
+예)
+<p class = "para">코딩유치원</p>
+<div id = "zara">코딩유치원</p>
+
+# 태그 이름으로 찾기
+soup.find('p')
+
+# 태그 속성(class)으로 찾기 - 2가지 형식
+soup.find(class_='para') #이 형식을 사용할 때는 class 다음에 언더바_를 꼭 붙여주어야 한다
+soup.find(attrs = {'class':'para'}) 
+
+# 태그 속성(id)으로 찾기
+soup.find(id='zara') 
+soup.find(attrs = {'id':'zara'})
+
+# 태그 이름과 속성으로 찾기
+soup.find('p', class_='para')
+soup.find('div', {'id' = 'zara'})
+
+select( ), select_one( )
+select( )는 find_all( )과 같은 개념, select_one( )은 find( )와 같은 개념
+다만, select( ) 함수는 괄호( )안에 CSS 선택자를 넣어서 원하는 정보를 찾는 것이 특징. 아주 직관적이고 쉬워서 이 방법 추천
+ 
+
+< 웹 크롤링에 자주 사용되는 CSS 선택자 >
+   분류	                      설명	                                          예
+태그 선택	            특정 태그를 선택	                                div --> 태그를 선택
+아이디 선택	id='속성값'인 태그를 선택	                    #query --> id의 속성값이 query인 태그 선택
+클래스 선택	class='속성값'인 태그를 선택	                    .title --> class의 속성값이 title인 태그 선택 
+태그+아이디 선택	특정 태그 중 id가 '속성값'인 태그를 선택       input#query --> input 태그 중, id의 속성값이 query인 태그 선택
+태그+클래스 선택	특정 태그 중 class가 '속성값'인 태그를 선택    p.title --> p 태그 중, class의 속성값이 title인 태그 선택 
+ 
+<간단 예시>
+# a태그의 class 속성명이 news_tit인 태그 
+soup.select_one('a.news_tit')
+
+soup.select('a.news_tit')
+
+for i in titles: 
+    title = i.get_text() print(title)
+ 
+https://coding-kindergarten.tistory.com/32
+네이버 뉴스에서 특정 키워드를 검색, 첫 페이지의 모든 기사들의 제목과 언론사 크롤링
+
+#step1.프로젝트에 필요한 패키지 불러온다.
+from bs4 import BeautifulSoup as bs
+import requests
+
+#step2.크롤링할 url 주소 입력 (네이버에서 코로나 검색 후, 뉴스 탭 클릭)
+url = 'https://search.naver.com/search.naver?where=news&sm=tab_jum&query=코로나'
+
+#step2-1.만약 다른 키워드를 매번 다르게 입력하고 싶다면 아래와 같이 하셔도 됩니다.
+query = input('검색할 키워드를 입력하세요: ')
+url = 'https://search.naver.com/search.naver?where=news&sm=tab_jum&query='+'%s'%query
+
+#step3.requests 패키지의 함수를 이용해 url의 html 문서를 가져온다.
+response = requests.get(url)
+html_text=response.text
+
+#step4.bs4 패키지의 함수를 이용해서 html 문서를 파싱한다.
+soup = bs(html_text, 'html.parser')
+
+#step5.bs4 패키지의 select_one 함수와 선택자 개념을 이용해서 뉴스기사 제목을 하나 가져온다.
+print(soup.select_one('a.news_tit').get_text())
+
+#step6.bs4 패키지의 select 함수와 선택자 개념을 이용해서 뉴스기사 제목을 모두 가져온다.
+titles = soup.select('a.news_tit')
+
+for i in titles:
+    title = i.get_text()
+    print(title)
+ 
+
+정적 수집에서 step2의 url 주소와 step5, 6의 선택자 개념은 웹 사이트마다 다르니 조금 더 자세히 살펴보겠습니다.
+<원하는 사이트 url 주소 얻기>
+ 크롬 브라우저 > 네이버 > 검색 키워드 입력 > ex) 코로나
+뉴스 탭 클릭 > url 주소 > url(변수)
+
+<원하는 정보 콕 찝어서 크롤링하기>
+1. 원하는 페이지 접속, F12
+2. 빨간색 화살표 아이콘 눌러, 화면에서 원하는 정보(글 혹은 사진)가 있는 곳 선택 > html 변경
+3. 해당 부분 html 코드 표시<a> 태그 안에 class="news_tit", 네이버 뉴스의 경우 한 페이지에 10개의 제목(class="news_tit")
+4. CSS Selector(선택자) 개념과 select_one 함수를 이용, 가장 첫 기사의 제목만 가져오는 코드
+   get_text() 하나의 html안의 텍스트를 가져오는 기능
+   print(soup.select_one('a.news_tit').get_text())
+
+   <결과>
+   [속보] 코로나 백신 접종자 중 60명 확진…AZ 56명·화이자 4명
+
+5. select( ) 함수 > 페이지에 존재 10개의 기사 제목 모두 가져옴
+   titles = soup.select('a.news_tit')
+
+   for i in titles:
+       title = i.get_text()
+       print(title)
+
+   <결과>
+   정총리 "코로나 4차유행 초입 아닌지 걱정…위태로운 상황"
+   '확진 직원 접촉' 권칠승 중기부 장관, 코로나19 '음성' 판정
+   [속보] 코로나 백신 접종자 중 60명 확진…AZ 56명·화이자 4명
+   [속보] 558명 신규 확진…'코로나19' 사흘 연속 500명대
+   [단독]"코로나 감염시 책임져라"…서강대 기숙사 '외출 서약' 논란
+   고3 학생·교사 '코로나 백신' 접종…"여름방학에 화이자 예정"(종합)
+   코로나19 백신 우리 동네에서 맞을 수 있다
+   학교 안 가서? '코로나 블루' 청소년만 피해 갔다
+   코로나19 어제 558명 신규 확진...사흘 연속 5백 명대
+   [단독] 코로나 앞에서 속수무책…투자자들 "150억 날릴 판"
+ 
+titles는 리스트 형식으로 10개의 html 정보가 들어있음
+get_text( ) 함수는 반드시 1개의 html 태그에만 사용할 수 있으니, 꼭 for문으로 하나하나씩 가져오시는 것 기억해두세요!
+
+
+https://coding-kindergarten.tistory.com/38
+오늘은 아주 짧게, 웹크롤링 할 때 원하는 정보의 형태에 따라서 어떻게 가져올 수 있는지 알아보겠습니다.
+
+선택자와 select(), select_one() 함수에 대해서 아시고, Reuqests, beautifulsoup를 이용한 정적수집에 대해서 아신다면 
+가져온 html에서 원하는 정보를 추출하는 함수가 필요합니다.
+
+<참고> select 함수 사용법
+# 선택자를 사용하는 방법 (copy selector)
+soup.select('태그명')
+soup.select('.클래스명')
+soup.select('#아이디명')
+ 
+soup.select('상위태그명 > 하위태그명 > 하위태그명')
+soup.select('상위태그명.클래스명 > 하위태그명.클래스명')
+ 
+# 태그와 속성값으로 찾는 방법
+soup.select('태그명[속성="값"]')
+ 
+# 한 개만 가져오고 싶은 경우
+soup.select_one('태그명[속성="값"]')
+
+텍스트 추출  get_text( )
+우리는 예전에 select( ) 함수를 이용해 추출한 html 문장(?)들이 titles라는 리스트에 담겨있다고 했을 때, 
+그 각 html 문장 안에 들어있는 텍스트를 아래와 같은 방식으로 추출했었죠. 이건 이미 다루었던 내용이라서 넘어가겠습니다.
+
+for i in titles:
+    title = i.get_text()
+    print(title)
+
+이미지 추출  get('src' ) or ['src']
+크롬의 개발자 도구(단축키 F12)를 통해 이미지를 찍어보면 보통 아래와 같은 html 구조를 가지고 있습니다. 
+
+위의 사진과 같은 img 태그는 어떻게 원하는 사진을 가져올 수 있을까요?
+1) 우선 select('img._image._listImage')로 여러개의 html을 가져옵니다. 
+만약 한 페이지 내에서 <img> 태그가 한 종류만 존재한다면 그냥 select('img')로 해도 되겠죠?
+2) 그 다음 for문을 이용해서 아래와 같이 src를 가져옵니다. 둘 중 하나만 골라서 사용하세요.
+
+for i in imgs:
+    src = i['src'] or  src = i.get('src')
+
+3) src는 한마디로 '이미지 주소를 담은 링크'입니다. 이것을 다운로드 받아서 내 PC에 저장하기 위해서는 추가적인 작업이 필요합니다. 
+이 부분은 일단 링크로 대신하고 추후 정리하도록 하겠습니다.
+m.blog.naver.com/PostView.nhn?blogId=kiddwannabe&logNo=221358581642&proxyReferer=https:%2F%2Fwww.google.co.kr%2F
+ 
+웹크롤링)이미지/동영상 자료 다운받기
+크롤링 진행시, 이미지나 동영상을 저장하고 싶을때가 있죠. 예를들면.. .인스타그램 크롤링을 진행할때, ...
+
+blog.naver.com
+
+href 추출  get('href' ) or ['href']
+링크를 가져오고 싶을 때, href를 추출합니다. 생각해보니 아래의 프로젝트를 할 때 사용한 적이 있네요.
+
+2021.04.05 - [파이썬 프로젝트] - [파이썬 프로젝트] 원하는 주제의 네이버 뉴스 텔레그램으로 5분마다 전송 받기
+
+for i in hrefs:
+    i.['href']  or  i.get('href')
+
+<2021.06.22 정정>
+아래의 내용은 selenium 패키지를 이용한 함수입니다. 
+2021.06.21 - [파이썬 패키지/웹 크롤링] - [Python/Selenium] 파이썬 동적 웹크롤링 텍스트, 하이퍼링크, 이미지, 속성 가져오는 법
+
+속성(attribute) 추출 get_attribute('속성 종류')
+이건 자주 사용하진 않는데 가끔 속성을 가져와야할 때가 있습니다. 
+예를 들면 제가 잡플래닛 평점을 크롤링 할 때, 별점을 아래와 같이 style 속성으로 정의하더군요. 
+여기에 width: 68%를 속성 추출을 이용해서 받아와서 5점 만점의 별점으로 재가공 했던 적이 있습니다.
+
+i.get_attribute('style')
+
+===========================================================================================
+https://coding-kindergarten.tistory.com/34
+동적 수집
+
+동적 수집이란?
+동적 수집은 계속 움직이는 페이지를 다루기 위해서 selenium 패키지로 chromdriver를 제어합니다. 
+특정 url로 접속해서 로그인을 하거나 버튼을 클릭하는 식으로 원하는 정보가 있는 페이지까지 도달합니다. 
+브라우저를 직접 조작하고 브라우저가 실행될때까지 기다려주기도 해야 해서 그 속도가 느리다는 특징이있습니다. 
+물론 사람이 하는 것보다는 빠르지만요.
+
+웹 크롤링을 하다보면 아래와 case 같이 정적 수집이 불가능한 경우들이 많습니다.
+
+case 1. 로그인을 해야만 접속 가능한 네이버 메일
+case2. 보고 있는 위치에 따라 url이 계속 변하는 네이버 지도
+case 3. 드래그를 아래로 내리면 계속 새로운 사진과 영상이 나타나는 인스타그램과 유튜브
+
+이번 시간에는 위의 케이스들은 아니지만, 지난 시간 배운 정적 수집과 비교를 위해 페이지 버튼을 조작해서 네이버 뉴스 기사 제목 10개를 
+크롤링 하는 것을 하면서 방법을 익혀보겠습니다.
+
+위에서 언급했듯이 selenium 패키지를 다루기 위해서는 크롬 드라이버가 설치되어 있어야하니, 아래의 글을 참고하셔서 설치해주세요.
+
+쉬운 이해를 위해서 코드를 끊어서 설명드려보겠습니다.
+
+1단계. Selenium 패키지로 네이버에 접속하기
+#step1.관련 패키지 import
+from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
+import time
+
+#step2.검색할 키워드 입력
+query = input('검색할 키워드를 입력하세요: ')
+
+#step3.크롬드라이버로 원하는 url로 접속
+url = 'https://www.naver.com/'
+driver = webdriver.Chrome('/Users/sangwoo/Desktop/chromedriver')
+driver.get(url)
+time.sleep(3)
+ 
+먼저 관련 패키지를 import 해야합니다. 이번 예에서는 세 번의 import가 있는데요.
+앞의 두 개는 selenium 패키지에서 크롬드라이버를 제어하고, 크롬드라이버에서 원하는 키를 입력할 수 있는 모듈을 import하는 것입니다.
+마지막 time은 크롬드라이버가 실행되고 페이지 이동하는 시간을 충분히 기다리기 위해서 사용하는 패키지입니다.
+
+다음으로 query로 이름지은 변수에 사용자가 원하는 키워드를 입력받아서 대입하는 코드를 두었습니다. 사용자가 터미널을 통해서 input을 입력하지 않으면 프로그램이 진행되지 않으니 주의하세요.
+그 다음엔 webdriver.Chrome('크롬드라이버가 위치하는 경로') 함수를 이용해 크롬드라이버를 실행하고 원하는 url로 접속하도록 get()함수를 사용해줍니다. 이때 앞서 말했듯이 실행되기 까지의 시간을 벌어주기 위해서 time 패키지의 sleep함수를 써서 3초간 기다려줍니다.
+ 
+2단계. Selenium 패키지로 원하는 페이지까지 이동하기
+#step4.검색창에 키워드 입력 후 엔터
+search_box = driver.find_element_by_css_selector("input#query")
+search_box.send_keys(query)
+search_box.send_keys(Keys.RETURN)
+time.sleep(3)
+
+#step5.뉴스 탭 클릭
+driver.find_element_by_xpath('//*[@id="lnb"]/div[1]/div/ul/li[2]/a').click()
+time.sleep(2)
+ 
+위의 코드를 한줄씩 설명하면 다음과 같습니다.
+
+ 1. 네이버창의 검색창을 찾습니다. (검색창은 css_selector로 찾는 방식을 사용했습니다)
+ 2. 아까 입력주었던 검색어를 검색창에 입력합니다. 
+ 3. 엔터 후 3초 기다립니다.
+ 4. 검색결과(현재 통합 탭 클릭 상태)에서 뉴스 탭을 클릭합니다. 
+아래에서 보듯이 탭은 여러개가 있는데다가 모두 같은 class명을 사용해서 하나만 콕 집을 수 있는 xpath 방식을 사용해야합니다.
+
+class='tab'인 a 태그가 여러개 있음
+ xpath를 찾으려면 아래와 같이 해당 html 부분을 우클릭하여 Copy XPath를 클릭해주면 됩니다. 그대로 VS CODE의 코딩창에 붙여넣기(Ctrl+V) 해주면 //*[@id="lnb"]/div[1]/div/ul/li[2]/a 이렇게 나오는 것을 확인 할 수 있습니다. 이걸 driver.find_element_by_xpath( )의 괄호 안에 넣어주면 됩니다. 여기서 주의할 점은 따옴표(' ')안에 넣어주어야 한다는 것입니다. xpath를 잘 보시면 쌍따옴표(" ")가 들어가 있기 때문입니다. (기초문법 강의 참고)
+
+5. 2초 기다린다.
+
+3단계. Selenium 패키지로 원하는 정보 수집하기
+여기서는 두 가지 방법으로 나뉩니다. 하나씩 살펴보겠습니다.
+
+우선 첫번째 방법은 selenium 패키지의 find_elements 함수로 html을 가져오는 방식입니다.
+
+#step5.검색 결과 페이지에서 selenium 패키지로 수집해보기
+news_titles = driver.find_elements_by_css_selector(".news_tit")
+
+for i in news_titles:
+    title = i.text
+    print(title)
+ 
+두번째 방법은 selenium 패키지의 driver.page_source 함수로 html문서를 받아와서 정적 수집을 진행하는 방식입니다. 
+selenium이 requests 패키지를 대신해서 html 문서 전체를 받아온 것 빼고는 지난 시간 배웠던 정적 수집과 같습니다.
+
+#step5-1.검색 결과 페이지의 html 문서 전체를 받아와서 bs4로 파싱하여 수집하기
+
+html = driver.page_source
+soup = bs(html, 'html.parser')
+
+titles = soup.select('a.news_tit')
+
+for i in titles:
+    title = i.get_text()
+    print(title)
+ 
+만약 한 페이지 내에서 가져와야할 정보가 많다면 두 번째 방법을 추천드립니다. 저도 직접 비교해보진 못 했지만 더 빠르다고 하더라구요.
+
+보통의 경우엔 find_elements_by_css_selector, 하나만 특정해야할 경우엔 find_elements_by_xpath를 사용한다고 생각하시면 편하지만 
+그 외에도 방법들이 있으니, 궁금하신 분들은 아래의 링크에 잘 정리되어 있으므로 참고바랍니다.
+
+book.coalastudy.com/data-crawling/week-6/stage-2
+ 
+Stage 2 - 가상브라우저를 조종해보자
+
+book.coalastudy.com
+여기까지 selenium 패키지를 이용한 동적 수집에 대해서 알아보았습니다.
+
+만약 100개의 기사를 수집하고 싶다면, for문을 이용해 10번 반복하면서, 다음페이지로 넘어가는 버튼을 click() 함수로 조작하면 되겠죠?
+
+이 부분은 직접 실습해보시길 추천드립니다.

@@ -1,0 +1,191 @@
+https://search.naver.com/search.naver?where=nexearch&sm=tab_jum&query=%ED%8C%8C%EC%9D%B4%EC%8D%AC
+https://search.naver.com/search.naver?where=view&sm=tab_jum&query=%ED%8C%8C%EC%9D%B4%EC%8D%AC
+
+파이썬 업무 자동화 - 실전편
+
+개발자도구 >  Elements
+Tag - 이름, 속성값
+
+"id 속성값이 right.ranking_contents 인 div 태그"
+	
+태그에 대한 이해
+<a></a>: 링크를 나타내는 태그
+<ul><li></li></ul>: 리스트를 나타내는 태그
+<input>: type에 따라 사용자로부터 입력을 받는 태그
+
+웹 페이지 분석 방법
+  크롬 개발자 도구로 원하는 요소를 찾음
+  해당 태그에 id 속성값이 있는지 확인
+  해당 태그에 name 속성값이 있는지 확인
+  해당 태그에 class 속성값이 있는지 확인
+  class 속성값이 고유한지 확인
+위 단계에서 못찾을 경우 부모 태그로 올라가서 반복
+
+import time
+from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
+
+d = webdriver.Chrome('./chromedriver')
+
+try:
+    d.get('https://www.naver.com')
+    elem = d.find_element_by_id('query')
+    elem.send_keys('파이썬')
+    elem.send_keys(Keys.RETURN)
+
+    div_tag = d.find_element_by_class_name('_svp_list')
+    litags = div_tag.find_elements_by_class_name('_svp_item')
+
+
+    for litag in litags:
+        area_tag = litag.find_element_by_class_name('total_area')
+        title_tag = area_tag.find_element_by_class_name('total_tit')
+        print(title_tag.text)
+        print(title_tag.get_attribute('href'))
+
+    time.sleep(3)
+except Exception as e:
+    print(e)
+finally:
+    d.close()
+    d.quit()
+
+5th
+iframe 태그
+
+
+1차시 파이썬 코드 재사용하기
+
+2차시 웹 사이트 분석하기
+
+3차시 포털 사이트 뉴스 수집하기
+import time
+from selenium.webdriver.common.by import By
+from selenium import webdriver
+
+d = webdriver.Chrome('./chromedriver')
+
+d.get('https://news.naver.com/main/main.naver?mode=LSD&mid=shm&sid1=100')
+
+ultag = d.find_element(By.ID, '_rankingList0')
+# print(ultag.text)
+litags = ultag.find_elements(By.TAG_NAME,'li')
+for litag in litags:
+    atag = litag.find_element(By.CLASS_NAME, 'list_tit')
+    print(atag.text)
+
+d.close()
+d.quit()
+
+
+4차시 포털 사이트 검새 결과 수집하기
+import time
+from selenium import webdriver
+
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
+
+d = webdriver.Chrome('./chromedriver')
+
+try:
+    d.get('https://www.naver.com')
+    elem = d.find_element(By.ID, 'query')
+    elem.send_keys('파이썬')
+    elem.send_keys(Keys.RETURN)
+
+    div_tag = d.find_element(By.CLASS_NAME, '_svp_list')
+    litags = div_tag.find_elements(By.CLASS_NAME, '_svp_item')
+
+    for litag in litags:
+        area_tag = litag.find_element(By.CLASS_NAME, 'total_area')
+        title_tag = area_tag.find_element(By.CLASS_NAME, 'total_tit')
+        print(title_tag.text)
+        print(title_tag.get_attribute('href'))
+
+    time.sleep(3)
+except Exception as e:
+    print(e)
+finally:
+    d.close()
+    d.quit()
+
+5차시 온라인 카페 검색 결과 가져오기
+6차시 웹 페이지 손쉽게 순회하기
+7차시 인스타그램 로그인 자동화하기
+8차시 인스타그램 좋아요 자동으로 누르기
+9차시 쇼핑몰 가격 조회 자동화 하기
+10차시 나만의 메신저 봇 만들기
+
+
+
+웹페이지 순회 - 페이지네이션
+d = webdriver.Chrome('./chromedriver')
+
+try:
+    d.get('https://cafe.naver.com/joonggonara')
+
+    elem = d.find_element(By.ID, 'topLayerQueryInput')
+    elem.send_keys('자전거')
+    elem.send_keys(Keys.RETURN)
+
+    iframe = d.find_element(By.ID, 'cafe_main')
+    d.switch_to.frame(iframe)
+
+    #### iframe 내부영역이 됩니다.
+    for page_num in range(2, 4):
+        area_tag = d.find_elements(By.CLASS_NAME, 'article-board')
+        area_tag = area_tag[1]
+
+        tr_tags = area_tag.find_elements(By.XPATH, './table/tbody/tr')
+        for tr_tag in tr_tags:
+            title_tag = tr_tag.find_element(By.CLASS_NAME, 'article')
+
+            print(title_tag.text)
+            print(title_tag.get_attribute('href'))
+
+        if page_num % 10 == 1:
+            page = d.find_element(By.CLASS_NAME, 'pgR')
+            page.click()
+        else:
+            page = d.find_element(By.CLASS_NAME, str(page_num))
+            page.click()
+
+    time.sleep(3)
+
+
+
+7차시 인스타그램 로그인 자동화하기
+
+
+웹크롤링 정리
+https://coding-kindergarten.tistory.com/29
+
+https://uppity.co.kr/serial/?q=YToxOntzOjEyOiJrZXl3b3JkX3R5cGUiO3M6MzoiYWxsIjt9&bmode=view&idx=6672866&t=board
+
+https://ko.tradingeconomics.com/
+https://www.truefriend.com/main/bond/research/_static/TF03cc030200.jsp
+
+https://stock79.tistory.com/entry/%EC%9C%A0%EC%9A%A9%ED%95%9C-%ED%8C%8C%EC%9D%B4%EC%8D%AC-%EA%B8%88%EC%9C%B5-%EB%8D%B0%EC%9D%B4%ED%84%B0-%EC%88%98%EC%A7%91-%EB%9D%BC%EC%9D%B4%EB%B8%8C%EB%9F%AC%EB%A6%AC-%EC%B6%94%EC%B2%9C
+
+https://infinite-learning.tistory.com/66
+
+https://nadocoding.tistory.com/99
+
+https://m.blog.naver.com/leebisu/222752506291
+
+https://scribblinganything.tistory.com/372 377 382 383
+
+파이썬 금융 데이터 분석과 자동화
+https://wikidocs.net/172789
+
+https://wg-cy.tistory.com/104 103  95 91 54
+
+https://bigdata-doctrine.tistory.com/3
+
+경제와 데이터 - 데이터 수집
+https://bigdata-doctrine.tistory.com/10
+https://bigdata-doctrine.tistory.com/16  공공데이터포털 오픈 API
+
+https://mokeya.tistory.com/161 한국은행 경제통계지표
+
+https://www.facebook.com/groups/pythonkorea/posts/3370820856334385/

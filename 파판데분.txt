@@ -1,0 +1,594 @@
+1. Seires 개요
+data1 = [10, 20, 30, 40, 50]
+data2 = (1,2,3,4,5)
+data3 = {'aa':11,'bb':22,'cc':33,'dd':44}
+sr = pd.Series(data1, index=['a','b','c','d','e'], dtype= np.int32)
+
+2. Series 속성
+#객체.속성
+sr.name sr.ndim sr.shape sr.size sr.dtype sr.values
+
+#객체.메소드()
+type(sr.index) type(sr.values) 
+
+인덱싱슬라이싱
+#인덱싱 :데이터의 요소를 추출 [zeobase]  [부여된인덱스]
+sr[0] sr[-1] sr['a']
+#slicing
+#[시작인덱스:끝인덱스:증가치]
+#시작인덱스<= idx <끝인덱스
+sr[1:4:1] #1<=idx<4  1,2,3
+sr[1:] #끝인덱스(끝까지)
+sr[1:-1] # 1<=index <-1
+sr['b':'d'] #부여된인덱스
+
+3. Series 인덱싱슬라이싱
+#0 base 인덱싱, 슬라이싱
+sr.iloc[0] sr.iloc[-1] sr.iloc[1:4] #1<=idx<4 sr.loc['c'] sr.loc['a':'c']
+ 
+sr.index = [2,3,4,5,6]
+#인덱스가 숫자면 부여된 인덱스로 고정됨(zero-base index 적용않됨)
+sr[2]
+sr[2:4] #슬라이싱의 경우는 0 base → 4    30   5    40 (future version use series.iloc[i:j])
+sr.loc[2] 10
+※ sr.loc[2:4] 2    10  3    20  4    30
+
+4. Sries 연산
+#산술연산(+,-,*,/,%,//,**)
+#관계연산(>,>=,<.<=,==,!=), 
+#논리연산( and(&), or(|), not(~) )
+# element wise(요소별연산)
+sr+1 sr-2 sr*2
+sr[0::2] #0,2,4
+#복수개의 인덱스를 선택
+sr[ [0,1,4] ]
+#booean indexing
+sr[ [True,True,False,False,True] ]
+sr>=30
+#필터
+sr[ sr>=30 ] # sr[[False,False,True,True,True]]
+
+#논리연산( and(&), or(|), not(~) )
+sr[ (sr==30) | (sr==50) ] sr[ ~( (sr>=20) & (sr<=40) ) ] 
+
+#sr데이터에서 20과 50 데이터를 선택하시요.
+sr[ (sr==20) | (sr==50) ]
+sr[ sr.isin([20,50]) ]
+
+sr[ sr.index=='a' ]
+
+5. Series CRUD
+#생성,추가, 수정, 삭제,검색, 정렬
+sr['f'] =100 #인덱스가 있으면 수정 없으면 추가
+
+# sr.drop(인덱스 )
+sr = sr.drop( 'a')
+sr.drop( 'a',inplace=True)
+sr.drop( ['b','d'] )
+
+sr.sort_values()
+sr.sort_values(ascending=False)
+sr.sort_index(ascending=False)
+
+6. Series 문자열 검색
+sr = pd.Series(['홍길동','이순신','김철수','김순이',
+               '이홍김'] )
+sr.index=['aa','bb','cc','dd','ee']
+sr
+
+#정규식 패턴매칭
+sr.str
+sr.str[0]  sr.str[1:]  sr.str[:-1] 
+sr[ sr.str.contains( '김' ) ]  sr[ sr.str.contains( '^김' ) ] #^ 시작을의미  sr[ sr.str.contains( '김$' ) ]#$ 끝을의미
+sr[ sr.str.contains( '김[철순]' ) ] #[]문자의 집합중 하나
+sr[ sr.str.contains( '순신|철수' ) ]
+# sr =sr.str.replace('김','황')
+sr.str.replace('김','황')  sr.str.replace('^김','황')
+
+7. Series 통계
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
+import matplotlib
+matplotlib.rcParams['font.family']='Malgun Gothic'
+matplotlib.rcParams['axes.unicode_minus'] = False
+
+data = [10,20,30,40,50]
+sr = pd.Series(data, index=['a','b','c','d','e'],name='kor')
+sr
+
+sr.max()  sr.min()  sr.idxmax() *  #가장큰값의 인덱스  
+# 45이하인데이터의 가장큰값을 구하시요.
+# sr[ sr<=45].max()
+sr1 = sr[ sr<=45]
+sr1.max()
+
+sr['b'] = 30
+sr.head(2)  sr.tail(2)  #default 5
+sr.nlargest(3)  
+sr.nlargest(3,keep='last')
+sr.nlargest(3,keep='all')  **
+sr.nsmallest(2)             **
+
+df.index
+df.values
+df.columns
+
+sr.sum()  sr.mean()  sr.median()  sr.quantile([0.25,0.5,0.75])  sr.std()  sr.unique()  sr.value_counts()  
+sr.count()   sr.describe() **
+
+df.index.name = '이름'
+df.to_excel('a.xlsx')
+
+def fn(v):
+    return v+1 if v<30 else v+2
+sr.apply( fn )
+
+sr.apply( lambda v: v+1 if v<30 else v+2 )
+
+# 0< sr <= 20
+# 20<sr <= 40
+# 40<sr <= 90  
+pd.cut(sr,[0,20,40,90] )   *
+pd.cut(sr,[0,20,40,90], labels=['C','B','A'] )
+pd.cut(sr,[0,20,40,90]).value_counts()
+
+sr.to_csv('a.csv')  *
+
+sr.plot()  
+plt.show()
+
+sr.plot(kind='bar',figsize=(3,3),title='점수',grid =True,
+       legend=True, ylim=(0,100))  *
+plt.show()
+
+for n in sr: #sr.values
+    print(n)
+
+for n in sr.items():
+    print(n)
+
+for i,v in sr.items(): ***
+    print(i,v)
+
+8. Series 연습
+
+
+sr[sr <= 70]
+sr[sr == sr.min()].index
+.name
+.ndim
+.dtype
+
+sr.max()
+sr[(sr>=50) & (sr<=80)]
+sr[sr.index.str.contains('^김')]
+
+sr.mean()
+sr.sum()
+sr.std()
+sr.drop(sr[sr<=40].index)
+sr.apply(lambda v :  v*1.1 if v>=50 else v*1.2)
+
+sr.nlargest()
+sr[sr>=50].plot(kind='bar'
+plot.show
+pd.cut(sr, [0, 50, 70, 100]).value_counts()
+
+==================================================================
+
+9. DataFrame
+d1 = [[1, 2], [3, 4], [5, 6]]
+d2 = [(1, 2), (3, 4), (5, 6)]
+d3 = [{'kor' : 1, 'eng' : 2},
+      {'kor' : 3, 'eng' : 4},
+      {'kor' : 5, 'eng' : 6}]
+d4 = {'kor' : [1, 3, 5], 'eng' : [2, 4, 6]}
+
+df1 = pd.DataFrame(d1, index=['a', 'b', 'c'], columns=['kor', 'eng'])
+df1
+
+data = {'eng' : [10, 30, 50, 70],
+        'kor' : [20, 40, 60, 80],
+        'math' : [90, 50, 20, 70]}
+
+df = pd.DataFrame(data, index=['a', 'b', 'c', 'd'])
+df
+
+10. DataFrame 속성
+data =  {'eng':[10,30,50,70],
+         'kor':[20,40,60,80],
+         'math':[90,50,20,70]}
+df = pd.DataFrame(data,index=['a','b','c','d'])
+
+df.ndim  df.shape  df.size  len(df)  df.index  df.columns  df.values  df.dtypes  df.info()  df.T
+
+11. DataFrame 인덱싱슬라이싱
+# df['컬럼명']
+# df['eng'].sum()
+df['eng']
+
+12. DataFrame 연산
+data = {'eng' : [10, 30, 50, 70],
+        'kor' : [20, 40, 60, 80],
+        'math' : [90, 50, 20, 70]}
+df = pd.DataFrame(data, index=['a', 'b', 'c', 'd'])
+
+df+2, df*2
+df['eng'] = 2 / df['eng'] = [1,2,3,4] / df['eng'] = df['eng']+2
+df.loc['b'] =2 / df.loc['b'] =[1,2,3] / df.loc['b'] = df.loc['b']+2
+df.loc['c':,'kor':] = [[1,2],[3,4]] / df.loc['c':,'kor':] =df.loc['c':,'kor':]+2
+#행단위 boolean indexing
+df[ [True,False,True,True] ] /df[ df['eng']>30 ] #df[ [False,False,True,True] ]
+sr = df['kor'] (sr==40) |(sr==80)
+df[ (df['kor']==40) | (df['kor']==80) ]
+
+* Query
+df.query( 'eng>30' )   # df[ df['eng']>30 ]
+df.query( 'kor==40 or kor==80')   # df[ (df['kor']==40) | (df['kor']==80) ]
+df.query( '20<=kor and kor<=50')   # df.query( '20<=kor<=50' )
+n = 30   df.query( f'eng>{n}' )   #'eng>30'
+
+13. DataFrame CRUD
+# CRUD 추가,수정,삭제,검색,정렬
+df['my'] = [1,2,3,4]   df['my1'] = df['eng']   
+df['eng'] + df['kor']   df['my2'] = df['eng'] + df['kor']
+df.loc['e'] =[1,2,3]
+
+# df = df.drop(index=['a','d'])
+# df.drop(index=['a','d'], inplace=True)
+df.drop(index=['a','d'])
+df.drop( columns=['kor','eng'])
+
+df.loc['b','kor']=np.nan   df.loc['b':'c','math'] = np.nan
+#전처리:nan데이터처리(비어있느데이터를 반드 처리)
+#1) 삭제
+#2) 평균값 등으로 채운다
+df.dropna()   
+# df.dropna(axis=0) #nan행을 삭제 
+df.dropna(axis=1) #nan컬럼을 삭제 
+df.dropna( subset=['kor'] )
+df.isnull().sum() #컬럼별 nan갯수..
+
+!pip install missingno
+import missingno as m
+m.matrix(df,color=(0, 0, 1))
+plt.show()
+
+df.fillna(10)
+df['kor'] = df['kor'].fillna(10)
+
+df.sort_values( by='math',ascending=False)
+
+df.loc['c','kor'] = 40
+df.sort_values( by='kor' )
+df.sort_values( by=['kor','math'] ) # 동일 값 존재 시 
+
+
+14. DataFrame 통계
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
+import matplotlib
+matplotlib.rcParams['font.family']='Malgun Gothic'
+matplotlib.rcParams['axes.unicode_minus']=False
+
+data =  {'eng':[10,30,50,70],
+         'kor':[20,40,60,80],
+         'math':[90,50,20,70]}
+df = pd.DataFrame(data,index=['a','b','c','d'])
+df
+df.max() #컬럼별  max
+df.max(axis=1) #row별
+sr = df.max()  sr.max()
+df.max().max()
+
+df.unstack() #2차원을 1차원 시리즈로 변경
+df.unstack().index
+df.unstack().max()
+
+df.sum()   df.sum().sum()
+df.mean()   df.mean(axis=1)
+df.median()   df.std()   df.quantile( [0.25,0.5,0.75])   df.count()   df.describe() **
+df.index.name = '이름'
+df.to_excel('a.xlsx')
+
+def fn(v):
+    return v.sum()
+#     print('v=',v)
+#     print("=======")
+#     return v
+df.apply( fn )
+
+df.apply( fn,axis=1 )
+
+df.apply( fn )
+df.apply( lambda v: v.sum() )
+df.apply( lambda v: v['a'] )
+
+df.apply(lambda v: '합격' if v.mean()>=70 else '불합격',axis=1)
+df['결과'] = df.apply(lambda v: '합격' if v.mean()>=70 else '불합격',axis=1)
+
+df.plot()
+plt.show()
+
+df.plot(kind='bar')
+plt.show()
+
+df.plot(kind='bar',y=['eng','math'],ylim=(0,100) ) #x='kor'
+plt.show()
+
+15. DataFrame 연습 (출생데이터)
+df = pd.read_csv('data/births.txt',header=None,
+                 index_col=0)
+df.columns = ['남아수','여아수']
+df.index.name = '연도'
+df
+
+#1. 남아수 총합을 구하시요   df['남아수'].sum()    df.sum()['남아수']
+#2. 여아수 평균을 구하시요   # df['여아수'].mean()   round( df['여아수'].mean(),2)
+#3. 남아수가 가장많은 년도와 남아수를 구하시요   mx = df['남아수'].max()   # df[ df['남아수']==mx ][ ['남아수']]   df.query( f'남아수=={mx}')   
+#4. 2000년도 이후 데이터를 구하시요   # df.index   df.loc[2000:]
+#5. 1995~ 2000 년도 데이터를 구하시요   df.loc[1995:2000]
+#6. 남아출생이 가장많은 top5 를 구하시요(년도와 남아수)   df['남아수'].nlargest()
+#7. 남아율(%) 컬럼을 추가하고 각년도별 남아수가 차지하는비율을 데이터로 보여주시요.   
+      # df['남아율'] = df['남아수'] /(df['남아수']+df['여아수'])  df['남아율'] = df['남아수'] /df.sum(axis=1)  df
+#8. 2000년도 이후데이터에 대해 출생량 컬럼을 추가하고 남아수가 1800000 이상이면 '많음'아니면 '적음' 이라고 보여 주시요
+                 남아수 출생량
+          2000   1233   '많음'
+          2001   1234   '적음'
+     df2000 = df.loc[2000:][['남아수']]     df2000['출생량'] =df2000['남아수'].apply(lambda v: '많음' if v>=1800000 else '적음')     df2000
+#9. 1800년대, 1900년대, 2000년대 각 남아,여야수 평균을 구하시요
+	df1800 = df.loc[1800:1899][['남아수','여아수']]
+	df1900 = df.loc[1900:1999][['남아수','여아수']]
+	df2000 = df.loc[2000:][['남아수','여아수']] 
+     df1800.mean()   df1900.mean()   df2000.mean()
+     df1 = pd.DataFrame( [df1800.mean(),df1900.mean(),df2000.mean().round(2)] )   df1.index=['1800년평균','1900년평균','2000년평균']   df1
+     df1.T
+
+=================================================================================
+
+16. 서울범죄데이터분석
+df = pd.read_csv('data/crime_in_Seoul.csv', index_col='관서명', encoding='euc-kr',thousands=',')   df
+df.info()
+#1. 살인발생이 가장높은 관서명, 살인발생,살인검거를  출력하시요   mx = df['살인 발생'].max()   df[ df['살인 발생']==mx][['살인 발생','살인 검거']]
+#2. 관서별 절도발생,절도검거에 대한 바차트를 그리시요   df.plot(kind='bar',y=['절도 발생','절도 검거'])    plt.show()
+            df[['절도 발생','절도 검거']].plot(kind='bar')   plt.show()
+#3. 절도검거율 컬럼을 추가 하시요   df['절도검거율'] = df['절도 검거']/df['절도 발생']*100   df.round(2)
+
+#상관관계 
+r이 -1.0과 -0.7 사이이면, 강한 음적 선형관계,
+r이 -0.7과 -0.3 사이이면, 뚜렷한 음적 선형관계,
+r이 -0.3과 -0.1 사이이면, 약한 음적 선형관계,
+r이 -0.1과 +0.1 사이이면, 거의 무시될 수 있는 선형관계,
+r이 +0.1과 +0.3 사이이면, 약한 양적 선형관계,
+r이 +0.3과 +0.7 사이이면, 뚜렷한 양적 선형관계,
+r이 +0.7과 +1.0 사이이면, 강한 양적 선형관계
+df.corr()
+
+df.plot(kind='scatter', x='폭력 발생',y='살인 발생' )   plt.show()
+
+
+17. DataFrame 그룹함수
+df = pd.read_excel('data/hotel.xlsx',index_col='Unnamed: 0')   df
+df.info()
+
+#sum, mean, max, min, agg, count
+g = df.groupby('grade')
+# print(g)
+# g.sum()['price']
+g.sum()[ ['price']]
+
+g = df.groupby('grade')
+g.mean()[['price']]  /  g.max()[['price']]  /  g.min()[['price']]  / g.count()[['price']]
+
+g = df.groupby('grade')
+df1= g.agg( ['sum','mean'] )['price']
+df1.columns = ['가격의합','가격의평균']
+df1
+
+def fn(v):
+    print("v=",v)
+    print("==========")
+    return v.sum()
+
+def fn1(v):
+#     return v.mean()
+    if v.mean()>8000:
+        return "높다"
+    else:
+        return '낮다'
+
+g = df.groupby('grade')['price']
+# g.agg( lambda v:v.mean() )
+g.agg( lambda v: '높다' if v.mean()>8000 else '낮다')
+# g.agg(fn1)
+
+df['grade'].value_counts()
+
+
+dfGrade = pd.read_csv('data/grade.csv')
+dfGrade
+
+dfGrade.info()
+
+#학년별 기말,중간고사 평균을 구하시요
+g = dfGrade.groupby('학년')
+g.mean()
+
+18. 전국교통사고데이터분석 
+!pip install folium
+
+map =folium.Map( location=(37.5012748,127.039625),zoom_start=14 )
+mk = folium.Marker( location=(37.5012748,127.039625),popup='test1')
+mk.add_to(map)
+mk1 = folium.Marker( location=(37.5112748,127.039625),popup='test2')
+mk1.add_to(map)
+map
+
+df = pd.read_csv('data/도로교통공단_전국_사망교통사고정보(2018).csv', encoding='euc-kr')  df
+
+# 1. 서울에서 일어난 요일별 사망자수, 사상자수 를 출력하시요
+seoulDF = df[df['발생지시도']=='서울'][['요일','사망자수','사상자수']]
+g =seoulDF.groupby('요일')
+g.sum().loc[['월','화','수','목','금','토','일']]
+
+# 2. 서울 강북구 지역의 교통사고 위치를 지도로 표시하고 각마커에는 법규위반내용을 표시하시요
+kangbuk =df[ (df['발생지시도']=='서울') & (df['발생지시군구']=='강북구')][['법규위반','위도','경도']]
+kangbuk
+
+map =folium.Map( location=(kangbuk['위도'].mean(),kangbuk['경도'].mean()),zoom_start=14 )
+for i,s in kangbuk.iterrows():
+    mk = folium.Marker( location=(s['위도'],s['경도']),popup=s['법규위반'] )
+    mk.add_to(map)
+map
+map.save('kangbuk.html')
+
+# 3. 부산에서 발생한 총 사망자수를 구하시요
+df[df['발생지시도']=='부산']['사망자수'].sum()
+
+# 4. 서울지역 월요일에 발생한 사상자수 사고유형 법규위반을 구하시요
+df[ (df['발생지시도']=='서울') & (df['요일']=='월')][['사상자수', '사고유형','법규위반']]
+
+# 5.횡단중 일어난 사고의 요일, 발생지시도, 법규위반, 피해자_당사자종별을 구하시요
+df[ df['사고유형']=='횡단중'][['요일', '발생지시도', '법규위반', '피해자_당사자종별']]
+
+19. 시계열데이터만들기
+시계열 데이타 datetime 형
+시계열만의 인덱싱 슬라이싱법
+
+dt = datetime(2020,9,1,11,10,12)   dt
+print(dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second)
+
+data = [{'이름':'홍길동','나이':20,'생일':'1999-10-10'},
+        {'이름':'이순신','나이':30,'생일':'1989-03-02'},
+        {'이름':'임꺽정','나이':40,'생일':'1979-06-12'}]
+# data = [{'이름':'홍길동','나이':20,'생일':datetime(1999,10,10)},
+#         {'이름':'이순신','나이':30,'생일':datetime(1989,3,2)},
+#         {'이름':'임꺽정','나이':40,'생일':datetime(1979,6,12)}]
+
+df = pd.DataFrame(data)
+df
+
+df['생일'] = pd.to_datetime( df['생일'] ) 
+#년-월-일 시:분:초
+#년/월/일
+#년.월.일
+
+df.info()
+datetime64[ns]
+
+df[ df['생일']< '1990-01-01' ]  
+df.set_index('생일',inplace=True)  df
+df.index
+
+
+20. 시계열데이터(resample)
+!pip install pandas_datareader
+sdf =data.get_data_yahoo('005930.KS','2017-01-01')
+
+sdf
+
+----------------------------------------------------------------
+import pandas_datareader.data as web
+import yfinance as yf
+
+yf.pdr_override()
+data = web.get_data_yahoo('005930.KS', start='2017-01-01')
+
+sdf
+
+
+sdf.info()
+sdf.index
+
+#시계열데이터 :인덱스가 datetime형인경우(인덱싱,슬라이싱)
+sdf['2019']   sdf['2019-02']   sdf['2019-01':'2019-06']   sdf['2019-01-01':]   sdf[ sdf.index > '2019-01-01']
+sdf['year']=sdf.index.year   sdf['month']=sdf.index.month   
+
+g = sdf.groupby('year')
+g.mean()
+g = sdf.groupby( sdf.index.year)
+g.mean()
+
+g = sdf.groupby( sdf.index.month)
+g.mean()
+
+g = sdf.groupby( [sdf.index.year, sdf.index.month] )
+g.mean()
+
+# http://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html
+
+[resample]
+g = sdf.resample(rule='A')  'w'  'Q'
+g.mean()
+
+group 활용, resample 함수 사용 rule 적용 
+분기별 : Q,   A 주간 : W
+
+21. 타이타닉데이터분석
+import seaborn as sns
+titanic =sns.load_dataset('titanic') #kaggle
+titanic
+
+titanic.isnull().sum()
+
+#1. deck컴럼을삭제하고나이(age)의 nan데이터를 나이평균값으로채우시요
+titanic.drop(columns=['deck'],inplace=True)
+titanic['age'].fillna(titanic['age'].mean(),inplace=True)
+
+#2. 생존자와사망자에대한갯수를구하시요
+titanic['alive'].value_counts()
+
+#3. 등급별(pclass)평균생존율을구하시요
+g = titanic.groupby('class')
+g.mean()['survived']
+
+#4. SibSp(가족또는친구탑승)의 생존평균을 구하시요
+#5. 혼자탑승(alone)한 인원의 생존평균을 구하시요
+g = titanic.groupby('alone')
+g.mean()['survived']
+
+#6. 성별생존평균을구하시요
+g =titanic.groupby('sex')
+g.mean()['survived']
+
+#7. 등급별티켓비용(fare)의 평균을 바차트로 그리시요
+g = titanic.groupby('class')
+g.mean()['fare'].plot(kind='bar')
+plt.show()
+
+#8. 나이분류컬럼을추가하시요
+     # 1~15(미성년자),15~25(청년),25~35(중년), 35~60(장년),60~(노년)으로표시하시요.
+ageMx =int(titanic['age'].max())
+#0< age <=15, 15< age<=25,... 60< age<=80
+titanic['나이분류']=pd.cut( titanic['age'], [0,15,25,35,60,ageMx],
+      labels=['미성년자','청년','중년','장년','노년'] )
+titanic['나이분류'].value_counts()
+
+#9. 나이분류를파이차트로표시하시요
+sr = titanic['나이분류'].value_counts()
+sr.plot(kind='pie',autopct='%.2f')
+plt.show()
+
+#10. 생존율이가장높은나이분류를구하시요
+g =titanic.groupby('나이분류')
+g.mean()['survived']
+
+#11. 성별, 나이분류별, 등급(pclass)를 멀티인덱스로, 평균생존을 값으로 표시하시요
+g = titanic.groupby(['sex','나이분류', 'pclass'])
+g.mean()[['survived']]
+
+
+[참고]
+https://yganalyst.github.io/data_handling/Pd_13/
+[Pandas 기초] 그룹(group)객체 생성 및 집계(agg) 연산
+
+https://teddylee777.github.io/visualization/folium/
+지도 시각화 도구 Folium 사용법을 파헤쳐보자!
+
+https://backtesting.tistory.com/entry/Python-based-financial-data-collection-libraries
+백테스팅
+
